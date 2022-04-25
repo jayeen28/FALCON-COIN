@@ -9,13 +9,21 @@ class Block {
         this.data = data;
         this.previousHash = previousHash;
         this.hash = this.calculateHash();
+        this.nonce = 0;
     }
     /**
      * This method calculates the hash of the block.
      * @returns {string} - The hash of the block.
      */
     calculateHash() {
-        return SHA256(this.index + this.previousHash + this.timestamp + JSON.stringify(this.data)).toString();
+        return SHA256(this.index + this.previousHash + this.timestamp + JSON.stringify(this.data) + this.nonce).toString();
+    }
+    mineBlock(difficulty) {
+        while (this.hash.substring(0, difficulty) !== Array(difficulty + 1).join("0")) {
+            this.nonce++;
+            this.hash = this.calculateHash();
+        }
+        console.log('Block mined: ' + this.hash);
     }
 }
 
@@ -25,6 +33,7 @@ class Block {
 class Blockchain {
     constructor() {
         this.chain = [this.createGenesisBlock()];
+        this.difficulty = 4;
     }
     /**
      * This method is used to create the first block of a chain. First need to be created manually and it is called genesis block.
@@ -46,7 +55,7 @@ class Blockchain {
      */
     addBlock(newBlock) {
         newBlock.previousHash = this.getLatestBlock().hash;
-        newBlock.hash = newBlock.calculateHash();
+        newBlock.mineBlock(this.difficulty);
         this.chain.push(newBlock);
     }
     isChainValid() {
@@ -61,7 +70,7 @@ class Blockchain {
 }
 
 let falconCoin = new Blockchain();
+console.log('Mining block 1 . . .')
 falconCoin.addBlock(new Block(1, "01/01/2018", { amount: 4 }));
+console.log('Mining block 2 . . .')
 falconCoin.addBlock(new Block(2, "10/01/2018", { amount: 10 }));
-console.log('Is block chain valid? ' + falconCoin.isChainValid());
-// console.log(JSON.stringify(falconCoin, null, 4));
